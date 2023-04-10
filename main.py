@@ -37,3 +37,52 @@ class MultiLevelQueueScheduler:
             self.q2.put(process)
         elif process.priority >= 7 and process.priority <= 9:
             self.q1.put(process)
+         def run(self):
+        while not self.q1.empty() or not self.q2.empty() or not self.q3.empty():
+            if not self.q1.empty():
+                self.run_queue_with_round_robin(self.q1, self.q1_time_quantum)
+            if not self.q2.empty():
+                self.run_queue_with_priority_scheduling(self.q2)
+            if not self.q3.empty():
+                self.run_queue_with_first_come_first_serve(self.q3)
+            self.time_elapsed += self.time_quantum
+
+    def run_queue_with_round_robin(self, queue, time_quantum):
+        print(f"Running queue 1 (Round Robin) for {time_quantum} seconds:")
+        self.run_queue(queue, time_quantum)
+
+    def run_queue_with_priority_scheduling(self, queue):
+        print("Running queue 2 (Priority Scheduling) for 10 seconds:")
+        self.run_queue(queue, self.time_quantum)
+
+    def run_queue_with_first_come_first_serve(self, queue):
+        print("Running queue 3 (FCFS) for 10 seconds:")
+        self.run_queue(queue, self.time_quantum)
+
+    def run_queue(self, queue, time_quantum):
+        time_remaining = time_quantum
+        while not queue.empty() and time_remaining > 0:
+            process = queue.get()
+            if process.remaining_time <= time_remaining:
+                self.execute_process(process, process.remaining_time)
+                time_remaining -= process.remaining_time
+            else:
+                self.execute_process(process, time_remaining)
+                process.remaining_time -= time_remaining
+                queue.put(process)
+                time_remaining = 0
+
+    def execute_process(self, process, time_executed):
+        print(f"Process {process.pid} is executing for {time_executed} seconds. Remaining time: {process.remaining_time - time_executed}")
+        process.remaining_time -= time_executed
+        if process.remaining_time <= 0:
+            print(f"Process {process.pid} completed.")
+
+if __name__ == '__main__':
+    scheduler = MultiLevelQueueScheduler()
+    scheduler.prompt_process_data()
+    scheduler.run()
+
+
+
+
